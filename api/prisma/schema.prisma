@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum AppointmentSource {
+  ADMIN
+  ONLINE
+}
+
+enum PaymentMethod {
+  PIX
+  CARD
+  CASH
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum MovementType {
+  IN
+  OUT
+}
+
+model AdminUser {
+  id            String         @id @default(uuid()) @db.Uuid
+  name          String
+  email         String         @unique
+  passwordHash  String
+  failedLogins  Int            @default(0)
+  lockedUntil   DateTime?
+  createdAt     DateTime       @default(now())
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  user       AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  familyId   String    @db.Uuid
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([familyId])
+}
+
+model Settings {
+  id                Int             @id @default(1)
+  name              String
+  legalName         String?
+  phone             String?
+  address           String?
+  timezone          String          @default("America/Sao_Paulo")
+  slotIntervalMin   Int             @default(15)
+  minAdvanceMin     Int             @default(120)
+  maxAdvanceDays    Int             @default(60)
+  cancellationHours Int             @default(12)
+  autoConfirmOnline Boolean         @default(false)
+  paymentMethods    PaymentMethod[] @default([PIX, CARD, CASH])
+  pixKey            String?
+  whatsappEnabled   Boolean         @default(true)
+  updatedAt         DateTime        @updatedAt
+}
+
+model BusinessHour {
+  id       Int @id @default(autoincrement())
+  weekday  Int
+  startMin Int
+  endMin   Int
+
+  @@index([weekday])
+}
+
+model Professional {
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String
+  active       Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  appointments Appointment[]
+  timeOffs     TimeOff[]
+}
+
+model TimeOff {
+  id             String        @id @default(uuid()) @db.Uuid
+  professionalId String?       @db.Uuid
+  professional   Professional? @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  startsAt       DateTime
+  endsAt         DateTime
+  reason         String?
+  createdAt      DateTime      @default(now())
+
+  @@index([startsAt, endsAt])
+}
+
+model Service {
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String
+  category     String
+  durationMin  Int
+  bufferMin    Int           @default(0)
+  priceCents   Int
+  description  String?
+  active       Boolean       @default(true)
+  deletedAt    DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
+}
+
+model Client {
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String
+  phone        String        @unique
+  email        String?
+  notes        String?
+  deletedAt    DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
+}
+
+model Appointment {
+  id             String            @id @default(uuid()) @db.Uuid
+  clientId       String            @db.Uuid
+  client         Client            @relation(fields: [clientId], references: [id])
+  serviceId      String            @db.Uuid
+  service        Service           @relation(fields: [serviceId], references: [id])
+  professionalId String            @db.Uuid
+  professional   Professional      @relation(fields: [professionalId], references: [id])
+  startsAt       DateTime
+  endsAt         DateTime
+  /// endsAt + service buffer; used by the exclusion constraint
+  blockedUntil   DateTime
+  status         AppointmentStatus @default(PENDING)
+  source         AppointmentSource
+  paymentMethod  PaymentMethod
+  priceCents     Int
+  serviceName    String
+  notes          String?
+  publicToken    String            @unique
+  cancelReason   String?
+  cancelledAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  transaction    Transaction?
+
+  @@index([startsAt])
+  @@index([clientId])
+  @@index([status])
+}
+
+model IdempotencyKey {
+  key         String   @id
+  requestHash String
+  response    Json
+  createdAt   DateTime @default(now())
+}
+
+model Product {
+  id          String          @id @default(uuid()) @db.Uuid
+  name        String
+  category    String
+  unit        String          @default("un.")
+  quantity    Int             @default(0)
+  minQuantity Int             @default(0)
+  costCents   Int             @default(0)
+  active      Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  movements   StockMovement[]
+}
+
+model StockMovement {
+  id        String       @id @default(uuid()) @db.Uuid
+  productId String       @db.Uuid
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type      MovementType
+  quantity  Int
+  reason    String?
+  createdAt DateTime     @default(now())
+
+  @@index([createdAt])
+}
+
+model Transaction {
+  id            String          @id @default(uuid()) @db.Uuid
+  date          DateTime        @db.Date
+  description   String
+  type          TransactionType
+  category      String
+  paymentMethod PaymentMethod
+  amountCents   Int
+  appointmentId String?         @unique @db.Uuid
+  appointment   Appointment?    @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  createdAt     DateTime        @default(now())
+
+  @@index([date])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String?  @db.Uuid
+  action    String
+  entity    String
+  entityId  String?
+  data      Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+}
