@@ -57,5 +57,6 @@ A migration habilita `btree_gist` e liga RLS em todas as tabelas sem policies: o
 ## Deploy
 
 - API: qualquer host Node 20+ (Render, Railway, Fly). `npm ci && npm run build && npx prisma migrate deploy && npm start`. Em produção defina `NODE_ENV=production`, `CORS_ORIGIN` com o domínio do front e um `JWT_SECRET` forte.
+- `render.yaml` usa o plano **free** (a API dorme após 15 min sem uso; primeira requisição leva ~30–60s). Para cliente em produção, troque para `starter` no painel do Render.
 - Front: `npm run build` e publique `web/dist` (Vercel/Netlify) com `VITE_API_URL` apontando para a API (`https://api.seudominio.com`). Configure rewrite de SPA para `index.html`.
 - Se front e API ficarem em domínios diferentes, o cookie de refresh usa `SameSite=None; Secure`.
