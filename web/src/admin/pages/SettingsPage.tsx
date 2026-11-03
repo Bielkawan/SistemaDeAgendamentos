@@ -44,7 +44,6 @@ function GeneralForm({ settings }: { settings: Settings }) {
         <label className="checkbox-line"><input type="checkbox" checked={!!h} onChange={e => setHour(i, e.target.checked ? {} : null)} /> {n}</label>
         <input type="time" disabled={!h} value={h ? minToTime(h.startMin) : ""} onChange={e => setHour(i, { startMin: timeToMin(e.target.value) })} aria-label={`Abertura ${n}`} />
         <input type="time" disabled={!h} value={h ? minToTime(h.endMin) : ""} onChange={e => setHour(i, { endMin: timeToMin(e.target.value) })} aria-label={`Fechamento ${n}`} />
-        <span />
       </div>; })}
     </div>
     <div className="panel"><div className="panel-heading compact"><div><h2>Regras de agendamento online</h2><p>Aplicadas à página pública</p></div></div>

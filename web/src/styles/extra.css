@@ -70,3 +70,13 @@
 .search-results button { display: flex; justify-content: space-between; gap: 10px; text-align: left; border: 0; background: transparent; padding: 10px 12px; border-radius: 10px; cursor: pointer; color: var(--ink); font: inherit; font-size: 14px; }
 .search-results button:hover { background: var(--blush-light); }
 .search-results span, .search-empty { color: var(--muted); font-size: 12px; }
+.hours-row { grid-template-columns: 96px minmax(0, 1fr) minmax(0, 1fr); }
+.hours-row input { min-width: 0; width: 100%; padding-left: 10px !important; padding-right: 6px !important; }
+.settings-grid .form-hint { display: block; margin-top: 14px; }
+.settings-grid .critical-product { align-items: center; gap: 12px; }
+.settings-grid .critical-product div { display: grid; gap: 2px; }
+.settings-grid .critical-product button { width: auto; flex: 0 0 auto; }
+.settings-grid form.form-row label:last-child { align-self: end; }
+.hours-row input::-webkit-calendar-picker-indicator { display: none; }
+a.secondary-button, a.primary-button { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+a.secondary-button { color: inherit; }
