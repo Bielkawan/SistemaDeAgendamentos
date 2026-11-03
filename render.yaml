@@ -3,7 +3,7 @@ services:
     name: nrstudio-api
     runtime: node
     rootDir: api
-    plan: starter
+    plan: free
     buildCommand: npm ci && npm run build && npx prisma migrate deploy
     startCommand: npm start
     healthCheckPath: /health
