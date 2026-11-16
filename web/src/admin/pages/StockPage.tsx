@@ -71,6 +71,7 @@ export function StockPage() {
   const { data, isLoading } = useProducts({ q: q.trim() || undefined, level: level || undefined });
   const summary = useStockSummary().data;
   const remove = useApiMutation(productsApi.remove, [["products"]]);
+  const zeroStock = useApiMutation(() => api("/admin/products/zero-stock", { method: "POST" }), [["products"]]);
   const alerts = (summary?.criticalCount ?? 0) + (summary?.lowCount ?? 0);
   return <ModuleShell title="Estoque" description="Acompanhe produtos, entradas, saídas e níveis críticos." action={{ label: "Novo produto", onClick: () => setModal({}) }}
     summary={summary && <div className="stock-summary">
@@ -81,7 +82,7 @@ export function StockPage() {
       <div className="panel stock-summary-card"><span>Valor em estoque</span><strong>{formatMoney(summary.stockValueCents)}</strong><small>{summary.totalProducts} produtos cadastrados</small></div>
       <div className="panel stock-summary-card"><span>Movimentações no mês</span><strong>{summary.movementsMonth.in + summary.movementsMonth.out}</strong><small>{summary.movementsMonth.out} saídas e {summary.movementsMonth.in} entradas</small></div>
     </div>}
-    tools={<><SearchInput value={q} onChange={setQ} placeholder="Buscar em estoque..." /><FilterSelect value={level} onChange={setLevel} options={[["", "Todos os produtos"], ["CRITICAL", "Crítico"], ["LOW", "Baixo"], ["OK", "Normal"]]} /></>}>
+    tools={<><SearchInput value={q} onChange={setQ} placeholder="Buscar em estoque..." /><FilterSelect value={level} onChange={setLevel} options={[["", "Todos os produtos"], ["CRITICAL", "Crítico"], ["LOW", "Baixo"], ["OK", "Normal"]]} /><button className="btn-small danger" onClick={() => { if (confirm("Tem certeza que deseja zerar todo o estoque?")) zeroStock.mutateAsync().catch(err => alert(errorMessage(err))); }}>Zerar estoque</button></>}>
     {isLoading ? <Loading /> : <DataTable columns={["Produto", "Categoria", "Quantidade", "Mínimo", "Situação"]} empty={!data?.length}>
       {data?.map(p => <tr key={p.id}>
         <Cell label="Produto">{p.name}</Cell><Cell label="Categoria">{p.category}</Cell><Cell label="Quantidade">{p.quantity} {p.unit}</Cell><Cell label="Mínimo">{p.minQuantity} {p.unit}</Cell><Cell label="Situação" status>{levelLabel[p.level]}</Cell>

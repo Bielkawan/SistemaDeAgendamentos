@@ -5,6 +5,7 @@ import type { MenuItem } from "../components/MoreMenu";
 
 export function useAppointmentActions(openAppointment: (a?: Appointment) => void) {
   const status = useApiMutation(appointmentsApi.setStatus, [["appointments"], ["slots"], ["clients"]]);
+  const remove = useApiMutation(appointmentsApi.remove, [["appointments"], ["slots"], ["clients"]]);
   const set = (id: string, s: AppointmentStatus) => status.mutateAsync({ id, status: s }).catch(err => alert(errorMessage(err)));
   return (a: Appointment): MenuItem[] => {
     const items: MenuItem[] = [];
@@ -16,6 +17,11 @@ export function useAppointmentActions(openAppointment: (a?: Appointment) => void
       items.push({ label: "Não compareceu", onClick: () => void set(a.id, "NO_SHOW") });
       items.push({ label: "Cancelar", danger: true, onClick: () => void set(a.id, "CANCELLED") });
     }
+    items.push({ label: "Excluir agendamento", danger: true, onClick: () => {
+      if (confirm("Tem certeza que deseja excluir este agendamento?")) {
+        remove.mutateAsync(a.id).catch(err => alert(errorMessage(err)));
+      }
+    } });
     return items;
   };
 }

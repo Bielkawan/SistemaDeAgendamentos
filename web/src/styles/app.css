@@ -1628,8 +1628,10 @@ tbody tr:hover {
   border-radius: 18px;
   width: 100%;
   max-width: 460px;
+  max-height: 90vh;
   padding: 26px;
   box-shadow: 0 30px 80px #38231a38;
+  overflow-y: auto;
 }
 
 .modal-head {

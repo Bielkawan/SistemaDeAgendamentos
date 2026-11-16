@@ -57,6 +57,7 @@ function GeneralForm({ settings }: { settings: Settings }) {
       {(Object.keys(paymentLabel) as PaymentMethod[]).map(p => <label className="checkbox-line" key={p}><input type="checkbox" checked={form.paymentMethods.includes(p)} onChange={e => set("paymentMethods", e.target.checked ? [...form.paymentMethods, p] : form.paymentMethods.filter(x => x !== p))} /> {paymentLabel[p]}</label>)}
       <label>Chave PIX<input maxLength={120} value={form.pixKey ?? ""} onChange={e => set("pixKey", e.target.value || null)} /></label>
       <label className="checkbox-line"><input type="checkbox" checked={form.whatsappEnabled} onChange={e => set("whatsappEnabled", e.target.checked)} /> Integração WhatsApp ativa</label>
+      <label>Número do WhatsApp (com DDD e 9 dígitos)<input inputMode="tel" pattern="\d{10,11}" placeholder="11999999999" value={form.whatsappNumber ?? ""} onChange={e => set("whatsappNumber", e.target.value.replace(/\D/g, "") || null)} /></label>
       <FormError message={error} />{msg && <span className="form-hint">{msg}</span>}
       <div className="modal-actions"><button className="primary-button" disabled={m.isPending}>Salvar configurações</button></div>
     </div>
