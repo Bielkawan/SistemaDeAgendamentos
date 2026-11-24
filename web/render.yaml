@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: nrstudio-web
+    runtime: static
+    rootDir: .
+    buildCommand: npm run build
+    publishDir: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://nrstudio-api.onrender.com
