@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { api, errorMessage } from "../../api/client";
 import { crud, useApiMutation, useProfessionals, useSettings, useTimeOffs } from "../../api/hooks";
 import type { BusinessHour, PaymentMethod, Professional, Settings, TimeOff } from "../../api/types";
-import { FormError, Loading } from "../../components/Modal";
+import { FormError, Loading, Modal } from "../../components/Modal";
 import { formatDate, formatTime, localToISO, minToTime, paymentLabel, timeToMin, todayISO, weekdayNames } from "../../lib/format";
 import { ModuleShell } from "../ModuleShell";
 
@@ -88,9 +88,30 @@ function TimeOffPanel() {
   </div>;
 }
 
+function ProfessionalModal({ professional, onClose }: { professional?: Professional; onClose: () => void }) {
+  const [name, setName] = useState(professional?.name ?? "");
+  const [active, setActive] = useState(professional?.active ?? true);
+  const [error, setError] = useState<string | null>(null);
+  const m = useApiMutation((body: Record<string, unknown>) => professional ? proApi.update({ id: professional.id, ...body }) : proApi.create(body), [["professionals"]]);
+  async function submit(e: FormEvent) {
+    e.preventDefault(); setError(null);
+    try { await m.mutateAsync({ name: name.trim(), active }); onClose(); }
+    catch (err) { setError(errorMessage(err)); }
+  }
+  return <Modal eyebrow="EQUIPE" title={professional ? "Editar profissional" : "Novo profissional"} description="Gerencie quem atende no studio." onClose={onClose}>
+    <form onSubmit={submit}>
+      <FormError message={error} />
+      <label>Nome<input required maxLength={120} value={name} onChange={e => setName(e.target.value)} placeholder="Nome completo" /></label>
+      <label className="checkbox-line"><input type="checkbox" checked={active} onChange={e => setActive(e.target.checked)} /> Disponível para agendamento</label>
+      <div className="modal-actions"><button type="button" className="secondary-button" onClick={onClose}>Cancelar</button><button className="primary-button" disabled={m.isPending}>Salvar</button></div>
+    </form>
+  </Modal>;
+}
+
 function ProfessionalsPanel() {
   const { data } = useProfessionals();
   const [name, setName] = useState("");
+  const [modal, setModal] = useState<{ professional?: Professional } | null>(null);
   const create = useApiMutation(proApi.create, [["professionals"]]);
   const update = useApiMutation(proApi.update, [["professionals"]]);
   const remove = useApiMutation(proApi.remove, [["professionals"]]);
@@ -98,7 +119,12 @@ function ProfessionalsPanel() {
     <form onSubmit={e => { e.preventDefault(); if (name.trim()) create.mutateAsync({ name: name.trim() }).then(() => setName("")).catch(err => alert(errorMessage(err))); }} className="form-row">
       <label>Nome<input maxLength={120} value={name} onChange={e => setName(e.target.value)} /></label><label>&nbsp;<button className="secondary-button">Adicionar</button></label>
     </form>
-    <div className="critical-products">{data?.map(p => <div className="critical-product" key={p.id}><div><strong>{p.name}</strong><span>{p.active ? "Ativa" : "Inativa"}</span></div><div><button className="btn-small" onClick={() => update.mutate({ id: p.id, active: !p.active })}>{p.active ? "Desativar" : "Ativar"}</button><button className="btn-small danger" onClick={() => remove.mutate(p.id).catch(err => alert(errorMessage(err)))}>Excluir</button></div></div>)}</div>
+    <div className="critical-products">{data?.map(p => <div className="critical-product" key={p.id}><div><strong>{p.name}</strong><span>{p.active ? "Ativa" : "Inativa"}</span></div><div><MoreMenu label={`Opções de ${p.name}`} items={[
+      { label: "Editar", onClick: () => setModal({ professional: p }) },
+      { label: p.active ? "Desativar" : "Ativar", onClick: () => update.mutateAsync({ id: p.id, active: !p.active }).catch(err => alert(errorMessage(err))) },
+      { label: "Excluir", danger: true, onClick: () => remove.mutateAsync(p.id).catch(err => alert(errorMessage(err))) },
+    ]} /></div></div>)}</div>
+    {modal && <ProfessionalModal professional={modal.professional} onClose={() => setModal(null)} />}
   </div>;
 }
 
