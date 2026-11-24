@@ -93,11 +93,12 @@ function ProfessionalsPanel() {
   const [name, setName] = useState("");
   const create = useApiMutation(proApi.create, [["professionals"]]);
   const update = useApiMutation(proApi.update, [["professionals"]]);
+  const remove = useApiMutation(proApi.remove, [["professionals"]]);
   return <div className="panel"><div className="panel-heading compact"><div><h2>Profissionais</h2><p>Quem atende no studio</p></div></div>
     <form onSubmit={e => { e.preventDefault(); if (name.trim()) create.mutateAsync({ name: name.trim() }).then(() => setName("")).catch(err => alert(errorMessage(err))); }} className="form-row">
       <label>Nome<input maxLength={120} value={name} onChange={e => setName(e.target.value)} /></label><label>&nbsp;<button className="secondary-button">Adicionar</button></label>
     </form>
-    <div className="critical-products">{data?.map(p => <div className="critical-product" key={p.id}><div><strong>{p.name}</strong><span>{p.active ? "Ativa" : "Inativa"}</span></div><button className="btn-small" onClick={() => update.mutate({ id: p.id, active: !p.active })}>{p.active ? "Desativar" : "Ativar"}</button></div>)}</div>
+    <div className="critical-products">{data?.map(p => <div className="critical-product" key={p.id}><div><strong>{p.name}</strong><span>{p.active ? "Ativa" : "Inativa"}</span></div><div><button className="btn-small" onClick={() => update.mutate({ id: p.id, active: !p.active })}>{p.active ? "Desativar" : "Ativar"}</button><button className="btn-small danger" onClick={() => remove.mutate(p.id).catch(err => alert(errorMessage(err)))}>Excluir</button></div></div>)}</div>
   </div>;
 }
 

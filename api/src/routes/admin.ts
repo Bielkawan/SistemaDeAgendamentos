@@ -104,6 +104,7 @@ adminRouter.delete("/services/:id", async (req, res) => { const id = idParam(req
 adminRouter.get("/professionals", async (_req, res) => { res.json(await prisma.professional.findMany({ orderBy: { createdAt: "asc" } })); });
 adminRouter.post("/professionals", async (req, res) => { res.status(201).json(await prisma.professional.create({ data: parse(z.object({ name: personName }), req.body) })); });
 adminRouter.patch("/professionals/:id", async (req, res) => { res.json(await prisma.professional.update({ where: { id: idParam(req.params) }, data: parse(z.object({ name: personName.optional(), active: z.boolean().optional() }), req.body) })); });
+adminRouter.delete("/professionals/:id", async (req, res) => { await prisma.professional.delete({ where: { id: idParam(req.params) } }); res.status(204).end(); });
 
 // Time offs
 adminRouter.get("/time-offs", async (_req, res) => { res.json(await prisma.timeOff.findMany({ where: { endsAt: { gte: new Date() } }, orderBy: { startsAt: "asc" } })); });

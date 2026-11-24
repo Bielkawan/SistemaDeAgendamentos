@@ -1632,6 +1632,8 @@ tbody tr:hover {
   padding: 26px;
   box-shadow: 0 30px 80px #38231a38;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-head {
@@ -1639,6 +1641,7 @@ tbody tr:hover {
   align-items: flex-start;
   margin-bottom: 22px;
   display: flex;
+  flex-shrink: 0;
 }
 
 .modal-head h2 {
@@ -1779,6 +1782,12 @@ form input:focus, form select:focus {
   gap: 9px;
   margin-top: 8px;
   display: flex;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  padding-top: 10px;
+  padding-bottom: 5px;
 }
 
 .success-message {

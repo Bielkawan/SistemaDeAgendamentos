@@ -7,7 +7,7 @@ import { publicApi } from "../api/hooks";
 import type { PaymentMethod, PublicAppointment, Slot } from "../api/types";
 import { Icon } from "../components/Icon";
 import { FormError, Loading } from "../components/Modal";
-import { addDaysISO, dateKeyToNoon, formatDay, formatDuration, formatFullDate, formatLongDate, formatMoney, formatTime, formatWeekday, maskPhone, paymentLabel, todayISO } from "../lib/format";
+import { addDaysISO, dateKeyToNoon, formatDay, formatDuration, formatFullDate, formatLongDate, formatMoney, formatTime, formatWeekday, maskPhone, paymentLabel, todayISO, whatsappLink } from "../lib/format";
 
 export function BookingPage() {
   const studio = useQuery({ queryKey: ["public", "studio"], queryFn: publicApi.studio });
@@ -41,6 +41,14 @@ export function BookingPage() {
     try {
       const res = await publicApi.book({ serviceId, professionalId: slot.professionalId, startsAt: slot.startsAt, client: { name: name.trim(), phone: phone.replace(/\D/g, "") }, paymentMethod, website }, idempotencyKey.current);
       setBooked(res);
+      // Send WhatsApp to client
+      const clientText = `Olá, ${name.trim()}! Seu agendamento no ${s.name} está confirmado para o dia ${formatFullDate(slot.startsAt)} às ${formatTime(slot.startsAt)}. Serviço: ${service?.name}. Se precisar alterar o horário, fale com a gente por aqui.`;
+      window.open(whatsappLink(phone.replace(/\D/g, ""), clientText), "_blank", "noopener,noreferrer");
+      // Send WhatsApp to studio
+      if (s.phone) {
+        const studioText = `Novo agendamento online! Cliente: ${name.trim()} | Serviço: ${service?.name} | Data: ${formatFullDate(slot.startsAt)} às ${formatTime(slot.startsAt)} | Profissional: ${s.professionals.find(p => p.id === slot.professionalId)?.name || "Qualquer"}`;
+        setTimeout(() => window.open(whatsappLink(s.phone.replace(/\D/g, ""), studioText), "_blank", "noopener,noreferrer"), 500);
+      }
       setStep(3);
     } catch (err) {
       setError(errorMessage(err));

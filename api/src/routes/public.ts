@@ -55,11 +55,14 @@ publicRouter.post("/appointments", limited(10, 15), async (req, res) => {
 
   try {
     let dto: ReturnType<typeof publicDto> | undefined;
-    await createAppointment({ ...body, notes: null, source: "ONLINE" }, async (db, created) => {
-      dto = publicDto(created, settings.cancellationHours);
+    let created: AppointmentWithRelations | undefined;
+    await createAppointment({ ...body, notes: null, source: "ONLINE" }, async (db, a) => {
+      created = a;
+      dto = publicDto(a, settings.cancellationHours);
       await storeKey(db, key, requestHash, JSON.parse(JSON.stringify(dto)));
     });
-    res.status(201).json(dto);
+    // Return created appointment data for WhatsApp notification
+    res.status(201).json({ ...dto, _created: created ? { client: created.client, serviceName: created.serviceName, startsAt: created.startsAt, professionalName: created.professional.name } : undefined });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002" && String(err.meta?.target ?? "").includes("key")) {
       const again = await findReplay(key, requestHash);
