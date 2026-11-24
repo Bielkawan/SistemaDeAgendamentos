@@ -8,7 +8,7 @@ import { parse } from "../lib/http.js";
 import { prisma } from "../lib/prisma.js";
 import { dateKey, isoDateTime, paymentMethod, personName, phone, uuid } from "../schemas/common.js";
 import { computeSlots } from "../services/availability.js";
-import { appointmentInclude, changeStatus, createAppointment, publicDto, toPublicDto } from "../services/appointments.js";
+import { appointmentInclude, changeStatus, createAppointment, publicDto, toPublicDto, type AppointmentWithRelations } from "../services/appointments.js";
 import { findReplay, hashRequest, storeKey } from "../services/idempotency.js";
 import { getSettings } from "../services/settings.js";
 

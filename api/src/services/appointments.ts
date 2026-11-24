@@ -13,7 +13,7 @@ export const appointmentInclude = {
   professional: { select: { id: true, name: true } },
 } satisfies Prisma.AppointmentInclude;
 
-type AppointmentWithRelations = Prisma.AppointmentGetPayload<{ include: typeof appointmentInclude }>;
+export type AppointmentWithRelations = Prisma.AppointmentGetPayload<{ include: typeof appointmentInclude }>;
 
 export const toDto = (a: AppointmentWithRelations) => ({
   id: a.id, startsAt: a.startsAt, endsAt: a.endsAt, status: a.status, source: a.source, paymentMethod: a.paymentMethod,
