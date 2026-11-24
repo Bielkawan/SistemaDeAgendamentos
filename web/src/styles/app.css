@@ -1628,12 +1628,29 @@ tbody tr:hover {
   border-radius: 18px;
   width: 100%;
   max-width: 460px;
-  max-height: 90vh;
+  max-height: 85vh;
   padding: 26px;
   box-shadow: 0 30px 80px #38231a38;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+}
+
+.modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background: #d4c4bc;
+  border-radius: 3px;
+}
+
+.modal::-webkit-scrollbar-thumb:hover {
+  background: #c4b4ac;
 }
 
 .modal-head {
@@ -1783,9 +1800,6 @@ form input:focus, form select:focus {
   margin-top: 8px;
   display: flex;
   flex-shrink: 0;
-  position: sticky;
-  bottom: 0;
-  background: var(--surface);
   padding-top: 10px;
   padding-bottom: 5px;
 }
